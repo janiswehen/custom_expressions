@@ -11,7 +11,7 @@ class CallExpression extends Expression {
   });
 
   @override
-  Expression copyWithToken({String? token}) {
+  CallExpression copyWithToken({String? token}) {
     return CallExpression(
       callee: callee,
       arguments: arguments,

@@ -11,7 +11,7 @@ class IndexExpression extends Expression {
   });
 
   @override
-  Expression copyWithToken({String? token}) {
+  IndexExpression copyWithToken({String? token}) {
     return IndexExpression(
       object: object,
       index: index,

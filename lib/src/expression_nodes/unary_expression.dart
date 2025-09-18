@@ -11,7 +11,7 @@ class UnaryExpression extends Expression {
   });
 
   @override
-  Expression copyWithToken({String? token}) {
+  UnaryExpression copyWithToken({String? token}) {
     return UnaryExpression(
       operand: operand,
       operator: operator,

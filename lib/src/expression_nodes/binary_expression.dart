@@ -13,7 +13,7 @@ class BinaryExpression extends Expression {
   });
 
   @override
-  Expression copyWithToken({String? token}) {
+  BinaryExpression copyWithToken({String? token}) {
     return BinaryExpression(
       left: left,
       right: right,

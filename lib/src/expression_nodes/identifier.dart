@@ -11,7 +11,7 @@ class Identifier extends Expression {
   }
 
   @override
-  Expression copyWithToken({String? token}) {
+  Identifier copyWithToken({String? token}) {
     return Identifier(name: name, token: token ?? this.token);
   }
 }

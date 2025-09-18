@@ -13,7 +13,7 @@ class ConditionalExpression extends Expression {
   });
 
   @override
-  Expression copyWithToken({String? token}) {
+  ConditionalExpression copyWithToken({String? token}) {
     return ConditionalExpression(
       condition: condition,
       then: then,

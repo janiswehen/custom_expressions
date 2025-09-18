@@ -12,7 +12,7 @@ class MemberExpression extends Expression {
   });
 
   @override
-  Expression copyWithToken({String? token}) {
+  MemberExpression copyWithToken({String? token}) {
     return MemberExpression(
       object: object,
       property: property,

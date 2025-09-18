@@ -6,7 +6,7 @@ class Literal extends Expression {
   Literal({required this.value, required super.token});
 
   @override
-  Expression copyWithToken({String? token}) {
+  Literal copyWithToken({String? token}) {
     return Literal(value: value, token: token ?? this.token);
   }
 }

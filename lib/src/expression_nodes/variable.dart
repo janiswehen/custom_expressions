@@ -7,7 +7,7 @@ class Variable extends Expression {
   Variable({required this.identifier, required super.token});
 
   @override
-  Expression copyWithToken({String? token}) {
+  Variable copyWithToken({String? token}) {
     return Variable(identifier: identifier, token: token ?? this.token);
   }
 }
