@@ -23,7 +23,7 @@ class StringVisitor with Visitor<String, Null> {
         .replaceAllMapped(
           RegExp(r'(#a)(\d+)'),
           (match) =>
-              visitNode(node.arguments[int.parse(match.group(0)!)], null),
+              visitNode(node.arguments[int.parse(match.group(2)!)], null),
         );
   }
 
