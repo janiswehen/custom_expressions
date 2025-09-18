@@ -1,12 +1,14 @@
-export 'expression_nodes/binary_expression.dart';
-export 'expression_nodes/call_expression.dart';
-export 'expression_nodes/conditional_expression.dart';
-export 'expression_nodes/expression.dart';
-export 'expression_nodes/identifier.dart';
-export 'expression_nodes/index_expression.dart';
-export 'expression_nodes/lambda_expression.dart';
-export 'expression_nodes/literal.dart';
-export 'expression_nodes/member_expression.dart';
-export 'expression_nodes/this_expression.dart';
-export 'expression_nodes/unary_expression.dart';
-export 'expression_nodes/variable.dart';
+library;
+
+export 'nodes/binary_expression.dart';
+export 'nodes/call_expression.dart';
+export 'nodes/conditional_expression.dart';
+export 'nodes/expression.dart';
+export 'nodes/identifier.dart';
+export 'nodes/index_expression.dart';
+export 'nodes/lambda_expression.dart';
+export 'nodes/literal.dart';
+export 'nodes/member_expression.dart';
+export 'nodes/this_expression.dart';
+export 'nodes/unary_expression.dart';
+export 'nodes/variable.dart';
