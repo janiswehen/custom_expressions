@@ -1,4 +1,4 @@
-import 'expression.dart';
+part of 'expression.dart';
 
 class CallExpression extends Expression {
   final Expression callee;
@@ -9,6 +9,17 @@ class CallExpression extends Expression {
     required this.arguments,
     required super.token,
   });
+
+  factory CallExpression.defaultToken({
+    required Expression callee,
+    required List<Expression> arguments,
+  }) {
+    return CallExpression(
+      callee: callee,
+      arguments: arguments,
+      token: '#c(${arguments.indexed.map((arg) => '#a${arg.$1}').join(', ')})',
+    );
+  }
 
   @override
   CallExpression copyWithToken({String? token}) {

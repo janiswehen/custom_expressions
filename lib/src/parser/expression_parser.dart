@@ -338,7 +338,7 @@ class ExpressionParser {
   Parser<Expression> get _groupOrIdentifier => [
     _group,
     if (config.allowThis) _thisExpression,
-    _identifier.map((v) => Variable(identifier: v, token: '#')),
+    _identifier.map((v) => Variable(identifier: v, token: '#i')),
   ].toChoiceParser().cast();
 
   Parser<_MemberArgument> get _memberArgument =>

@@ -1,4 +1,4 @@
-import 'expression.dart';
+part of 'expression.dart';
 
 class IndexExpression extends Expression {
   final Expression object;
@@ -9,6 +9,13 @@ class IndexExpression extends Expression {
     required this.index,
     required super.token,
   });
+
+  factory IndexExpression.defaultToken({
+    required Expression object,
+    required Expression index,
+  }) {
+    return IndexExpression(object: object, index: index, token: '#o[#i]');
+  }
 
   @override
   IndexExpression copyWithToken({String? token}) {

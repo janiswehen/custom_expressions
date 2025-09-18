@@ -1,4 +1,4 @@
-import 'expression.dart';
+part of 'expression.dart';
 
 class Identifier extends Expression {
   final String name;
@@ -8,6 +8,10 @@ class Identifier extends Expression {
     assert(name != 'false');
     assert(name != 'true');
     assert(name != 'this');
+  }
+
+  factory Identifier.defaultToken({required String name}) {
+    return Identifier(name: name, token: name);
   }
 
   @override

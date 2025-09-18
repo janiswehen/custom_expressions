@@ -12,4 +12,5 @@ dependencies:
 
 dev_dependencies:
   lints: ^5.0.0
+  dart_code_metrics_presets: ^2.24.0
   test: ^1.24.0

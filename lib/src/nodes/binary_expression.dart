@@ -1,4 +1,4 @@
-import 'expression.dart';
+part of 'expression.dart';
 
 class BinaryExpression extends Expression {
   final Expression left;
@@ -11,6 +11,19 @@ class BinaryExpression extends Expression {
     required this.operator,
     required super.token,
   });
+
+  factory BinaryExpression.defaultToken({
+    required Expression left,
+    required Expression right,
+    required String operator,
+  }) {
+    return BinaryExpression(
+      left: left,
+      right: right,
+      operator: operator,
+      token: '#l #o #r',
+    );
+  }
 
   @override
   BinaryExpression copyWithToken({String? token}) {

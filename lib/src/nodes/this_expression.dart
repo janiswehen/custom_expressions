@@ -1,7 +1,11 @@
-import 'expression.dart';
+part of 'expression.dart';
 
 class ThisExpression extends Expression {
   ThisExpression({required super.token});
+
+  factory ThisExpression.defaultToken() {
+    return ThisExpression(token: 'this');
+  }
 
   @override
   ThisExpression copyWithToken({String? token}) {

@@ -1,9 +1,29 @@
-import 'expression.dart';
+part of 'expression.dart';
 
 class Literal extends Expression {
   final dynamic value;
 
   Literal({required this.value, required super.token});
+
+  factory Literal.defaultToken({required dynamic value}) {
+    if (value is List) {
+      return Literal(
+        value: value,
+        token: '[${value.indexed.map((e) => '#a${e.$1}').join(', ')}]',
+      );
+    }
+    if (value is Map) {
+      return Literal(
+        value: value,
+        token:
+            '{${value.entries.indexed.map((e) => '${e.$1}{#k: #v}').join(', ')}}',
+      );
+    }
+    if (value is String) {
+      return Literal(value: value, token: '"$value"');
+    }
+    return Literal(value: value, token: value.toString());
+  }
 
   @override
   Literal copyWithToken({String? token}) {
