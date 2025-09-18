@@ -49,7 +49,7 @@ class ExpressionParser {
   final ParserConfig config;
 
   Parser<Expression> get _finalProgram => _expression
-      .keepTrim()
+      .trimLR()
       .map(
         (l) => l.middle.copyWithToken(
           token: l.leading + l.middle.token + l.trailing,
@@ -140,20 +140,14 @@ class ExpressionParser {
   // This function assumes that it needs to gobble the opening bracket
   // and then tries to gobble the expressions as arguments.
   Parser<Literal> get _arrayLiteral =>
-      (char('[').keepTrimFlatten() & _arguments & char(']').keepTrimFlatten())
-          .map(
-            (l) =>
-                Literal(value: l[1].list, token: '${l[0]}${l[1].token}${l[2]}'),
-          );
+      (char('[').trimRFlatten() & _arguments & char(']').trimLFlatten()).map(
+        (l) => Literal(value: l[1].list, token: '${l[0]}${l[1].token}${l[2]}'),
+      );
 
   Parser<Literal> get _mapLiteral =>
-      (char('{').keepTrimFlatten() &
-              _mapArguments &
-              char('}').keepTrimFlatten())
-          .map(
-            (l) =>
-                Literal(value: l[1].map, token: '${l[0]}${l[1].token}${l[2]}'),
-          );
+      (char('{').trimRFlatten() & _mapArguments & char('}').trimLFlatten()).map(
+        (l) => Literal(value: l[1].map, token: '${l[0]}${l[1].token}${l[2]}'),
+      );
 
   Parser<Literal> get _literal => [
     _numericLiteral,
@@ -166,10 +160,10 @@ class ExpressionParser {
 
   // This function is responsible for gobbling an individual expression,
   // e.g. `1`, `1+2`, `a+(b*2)-Math.sqrt(2)`
-  Parser<KeepTrimResult<String>> get _binaryOperation => config.binaryOperators
+  Parser<TrimResult<String>> get _binaryOperation => config.binaryOperators
       .map<Parser<String>>((v) => string(v))
       .reduce((a, b) => (a | b).cast<String>())
-      .keepTrim();
+      .trimLR();
 
   Parser<Expression> get _binaryExpression =>
       _token.plusSeparated(_binaryOperation).map((sl) {
@@ -179,17 +173,17 @@ class ExpressionParser {
         var stack = <dynamic>[first];
 
         for (var i = 1; i < l.length; i += 2) {
-          var op = l[i] as KeepTrimResult<String>;
+          var op = l[i] as TrimResult<String>;
           var precedence = config.precedenceForBinaryOperator(op.middle);
 
           // Reduce: make a binary expression from the three topmost entries.
           while ((stack.length > 2) &&
               (precedence <=
                   config.precedenceForBinaryOperator(
-                    (stack[stack.length - 2] as KeepTrimResult<String>).middle,
+                    (stack[stack.length - 2] as TrimResult<String>).middle,
                   ))) {
             var right = stack.removeLast();
-            var op = stack.removeLast() as KeepTrimResult<String>;
+            var op = stack.removeLast() as TrimResult<String>;
             var left = stack.removeLast();
             var node = BinaryExpression(
               operator: op.middle,
@@ -207,7 +201,7 @@ class ExpressionParser {
         var node = stack[i];
         while (i > 1) {
           node = BinaryExpression(
-            operator: (stack[i - 1] as KeepTrimResult<String>).middle,
+            operator: (stack[i - 1] as TrimResult<String>).middle,
             left: stack[i - 2],
             right: node,
             token: '#l${stack[i - 1].leading}#o${stack[i - 1].trailing}#r',
@@ -220,7 +214,7 @@ class ExpressionParser {
   Parser<UnaryExpression> get _unaryExpression => config.unaryOperators
       .map<Parser<String>>((v) => string(v))
       .reduce((a, b) => (a | b).cast<String>())
-      .keepTrim()
+      .trimR()
       .seq(_token)
       .map(
         (l) => UnaryExpression(
@@ -231,10 +225,10 @@ class ExpressionParser {
       );
 
   Parser<LambdaExpression> get lambdaExpression =>
-      (char('(').keepTrimFlatten() &
+      (char('(').trimRFlatten() &
               _lambdaArguments &
-              char(')').keepTrimFlatten() &
-              string('=>').keepTrimFlatten() &
+              char(')').trimLFlatten() &
+              string('=>').trimLRFlatten() &
               _expression)
           .map(
             (l) => LambdaExpression(
@@ -250,7 +244,7 @@ class ExpressionParser {
   // until the terminator character `)` or `]` is encountered.
   // e.g. `foo(bar, baz)`, `my_func()`, or `[bar, baz]`
   Parser<_ArrayArgument> get _arguments => _expression
-      .plusSeparated(char(',').keepTrimFlatten())
+      .plusSeparated(char(',').trimLRFlatten())
       .map(
         (sl) => (
           list: sl.elements,
@@ -262,7 +256,7 @@ class ExpressionParser {
       .optionalWith((list: [], token: ''));
 
   Parser<_LambdaArgument> get _lambdaArguments => _identifier
-      .plusSeparated(char(',').keepTrimFlatten())
+      .plusSeparated(char(',').trimLRFlatten())
       .map(
         (sl) => (
           arguments: sl.elements,
@@ -274,14 +268,14 @@ class ExpressionParser {
       .optionalWith((arguments: [], token: ''));
 
   Parser<_MapArgument> get _mapArguments =>
-      (_expression & char(':').keepTrimFlatten() & _expression)
+      (_expression & char(':').trimLRFlatten() & _expression)
           .map(
             (l) => (
               entry: MapEntry<Expression, Expression>(l[0], l[2]),
               token: '{#k${l[1]}#v}',
             ),
           )
-          .plusSeparated(char(',').keepTrimFlatten())
+          .plusSeparated(char(',').trimLRFlatten())
           .map(
             (sl) => (
               map: Map<Expression, Expression>.fromEntries(
@@ -337,7 +331,7 @@ class ExpressionParser {
   // that the next thing it should see is the close parenthesis. If not,
   // then the expression probably doesn't have a `)`
   Parser<Expression> get _group =>
-      (char('(').keepTrimFlatten() & _expression & char(')').keepTrimFlatten())
+      (char('(').trimRFlatten() & _expression & char(')').trimLFlatten())
           .map((l) => l[1].copyWithToken(token: '${l[0]}${l[1].token}${l[2]}'))
           .cast();
 
@@ -348,22 +342,23 @@ class ExpressionParser {
   ].toChoiceParser().cast();
 
   Parser<_MemberArgument> get _memberArgument =>
-      (char('.').keepTrimFlatten() & _identifier).map(
+      (char('.').trimLRFlatten() & _identifier).map(
         (l) => (property: l[1], token: '${l[0]}#p'),
       );
 
   Parser<_IndexArgument> get _indexArgument =>
-      (char('[').keepTrimFlatten() & _expression & char(']').keepTrimFlatten())
-          .map((l) => (expression: l[1], token: '${l[0]}#i${l[2]}'));
+      (char('[').trimRFlatten() & _expression & char(']').trimLFlatten()).map(
+        (l) => (expression: l[1], token: '${l[0]}#i${l[2]}'),
+      );
 
   Parser<_CallArgument> get _callArgument =>
-      (char('(').keepTrimFlatten() & _arguments & char(')').keepTrimFlatten())
-          .map(
-            (l) => (arguments: l[1].list, token: '${l[0]}${l[1].token}${l[2]}'),
-          );
+      (char('(').trimRFlatten() & _arguments & char(')').trimLFlatten()).map(
+        (l) => (arguments: l[1].list, token: '${l[0]}${l[1].token}${l[2]}'),
+      );
 
   // Ternary expression: test ? consequent : alternate
   Parser<List> get _conditionArguments =>
-      (char('?').keepTrimFlatten() & _expression & char(':').keepTrimFlatten())
-          .seq(_expression);
+      (char('?').trimLRFlatten() & _expression & char(':').trimLRFlatten()).seq(
+        _expression,
+      );
 }
