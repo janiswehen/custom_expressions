@@ -19,6 +19,8 @@ abstract class Visitor<T> {
         return visitConditionalExpression(node);
       case CallExpression():
         return visitCallExpression(node);
+      case LambdaExpression():
+        return visitLambdaExpression(node);
       case UnaryExpression():
         return visitUnaryExpression(node);
       case BinaryExpression():
@@ -36,6 +38,7 @@ abstract class Visitor<T> {
   T visitMemberExpression(MemberExpression node);
   T visitConditionalExpression(ConditionalExpression node);
   T visitCallExpression(CallExpression node);
+  T visitLambdaExpression(LambdaExpression node);
   T visitUnaryExpression(UnaryExpression node);
   T visitBinaryExpression(BinaryExpression node);
 }

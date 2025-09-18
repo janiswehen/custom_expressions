@@ -6,6 +6,8 @@ import 'parser_config.dart';
 
 typedef _ArrayArgument = ({List<Expression> list, String token});
 
+typedef _LambdaArgument = ({List<Identifier> arguments, String token});
+
 typedef _MapArgument = ({Map<Expression, Expression> map, String token});
 
 typedef _IndexArgument = ({Expression expression, String token});
@@ -30,7 +32,10 @@ class ExpressionParser {
                   ),
           ),
     );
-    _token.set((_literal | _unaryExpression | _variable).cast<Expression>());
+    _token.set(
+      (lambdaExpression | _literal | _unaryExpression | _variable)
+          .cast<Expression>(),
+    );
   }
 
   Expression? tryParse(String formattedString) {
@@ -225,6 +230,20 @@ class ExpressionParser {
         ),
       );
 
+  Parser<LambdaExpression> get lambdaExpression =>
+      (char('(').keepTrimFlatten() &
+              _lambdaArguments &
+              char(')').keepTrimFlatten() &
+              string('=>').keepTrimFlatten() &
+              _expression)
+          .map(
+            (l) => LambdaExpression(
+              arguments: l[1].arguments,
+              body: l[4],
+              token: '${l[0]}${l[1].token}${l[2]}${l[3]}#b',
+            ),
+          );
+
   // Gobbles a list of arguments within the context of a function call
   // or array literal. This function also assumes that the opening character
   // `(` or `[` has already been gobbled, and gobbles expressions and commas
@@ -241,6 +260,18 @@ class ExpressionParser {
         ),
       )
       .optionalWith((list: [], token: ''));
+
+  Parser<_LambdaArgument> get _lambdaArguments => _identifier
+      .plusSeparated(char(',').keepTrimFlatten())
+      .map(
+        (sl) => (
+          arguments: sl.elements,
+          token: sl.sequential.indexed
+              .map((e) => e.$2 is String ? e.$2 : '#a${e.$1 ~/ 2}')
+              .join(),
+        ),
+      )
+      .optionalWith((arguments: [], token: ''));
 
   Parser<_MapArgument> get _mapArguments =>
       (_expression & char(':').keepTrimFlatten() & _expression)
@@ -307,7 +338,7 @@ class ExpressionParser {
   // then the expression probably doesn't have a `)`
   Parser<Expression> get _group =>
       (char('(').keepTrimFlatten() & _expression & char(')').keepTrimFlatten())
-          .map((l) => l[1].copyWith(token: '${l[0]}${l[1].token}${l[2]}'))
+          .map((l) => l[1].copyWithToken(token: '${l[0]}${l[1].token}${l[2]}'))
           .cast();
 
   Parser<Expression> get _groupOrIdentifier => [

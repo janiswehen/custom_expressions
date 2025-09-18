@@ -12,9 +12,8 @@ class StringVisitor extends Visitor<String> {
   String visitLiteral(Literal node) {
     if (node.value is List) {
       return node.token.replaceAllMapped(
-        RegExp(r'#a\d+'),
-        (match) =>
-            visitNode(node.value[int.parse(match.group(0)!.substring(2))]),
+        RegExp(r'(#a)(\d+)'),
+        (match) => visitNode(node.value[int.parse(match.group(2)!)]),
       );
     } else if (node.value is Map) {
       return node.token.replaceAllMapped(RegExp(r'(\d+){([^{}]+)}'), (match) {
@@ -67,6 +66,26 @@ class StringVisitor extends Visitor<String> {
   }
 
   @override
+  String visitCallExpression(CallExpression node) {
+    return node.token
+        .replaceFirst('#c', visitNode(node.callee))
+        .replaceAllMapped(
+          RegExp(r'(#a)(\d+)'),
+          (match) => visitNode(node.arguments[int.parse(match.group(0)!)]),
+        );
+  }
+
+  @override
+  String visitLambdaExpression(LambdaExpression node) {
+    return node.token
+        .replaceAllMapped(
+          RegExp(r'(#a)(\d+)'),
+          (match) => visitNode(node.arguments[int.parse(match.group(2)!)]),
+        )
+        .replaceFirst('#b', visitNode(node.body));
+  }
+
+  @override
   String visitUnaryExpression(UnaryExpression node) {
     return node.token
         .replaceFirst('#o', node.operator)
@@ -79,17 +98,5 @@ class StringVisitor extends Visitor<String> {
         .replaceFirst('#l', visitNode(node.left))
         .replaceFirst('#o', node.operator)
         .replaceFirst('#r', visitNode(node.right));
-  }
-
-  @override
-  String visitCallExpression(CallExpression node) {
-    return node.token
-        .replaceFirst('#c', visitNode(node.callee))
-        .replaceAllMapped(
-          RegExp(r'#a\d+'),
-          (match) => visitNode(
-            node.arguments[int.parse(match.group(0)!.substring(2))],
-          ),
-        );
   }
 }
