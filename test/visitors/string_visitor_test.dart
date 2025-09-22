@@ -59,7 +59,7 @@ void main() {
     late ExpressionParser parser;
 
     setUp(() {
-      parser = ExpressionParser();
+      parser = ExpressionParser(config: ParserConfig.defaultConfig());
     });
 
     group('Binary Expressions', () {
@@ -171,6 +171,13 @@ void main() {
           toNotChangeWhenParsedWith(parser),
         );
         expect('baz(\n  1 + 2,\n  3 * 4\n)', toNotChangeWhenParsedWith(parser));
+      });
+
+      test('should handle trailing comma', () {
+        expect('foo(1,)', toNotChangeWhenParsedWith(parser));
+        expect('foo(1, 2,)', toNotChangeWhenParsedWith(parser));
+
+        expect(() => parser.parse('foo(,)'), throwsA(isA<Exception>()));
       });
     });
 
@@ -374,6 +381,13 @@ void main() {
           toNotChangeWhenParsedWith(parser),
         );
       });
+
+      test('should handle Trailing Commas', () {
+        expect('(a,) => 1', toNotChangeWhenParsedWith(parser));
+        expect('(a, b,) => 1', toNotChangeWhenParsedWith(parser));
+
+        expect(() => parser.parse('(,) => 1'), throwsA(isA<Exception>()));
+      });
     });
 
     group('Literal Expressions', () {
@@ -426,6 +440,16 @@ void main() {
         expect('{\n}', toNotChangeWhenParsedWith(parser));
         expect('{ "a" : 1 , "b" : 2 }', toNotChangeWhenParsedWith(parser));
         expect('{"a":1,"b":2}', toNotChangeWhenParsedWith(parser));
+      });
+
+      test('should handle trailing comma in arrays and maps', () {
+        expect('[1,]', toNotChangeWhenParsedWith(parser));
+        expect('[1,2,]', toNotChangeWhenParsedWith(parser));
+        expect('{"a":1,}', toNotChangeWhenParsedWith(parser));
+        expect('{"a":1, "b":2,}', toNotChangeWhenParsedWith(parser));
+
+        expect(() => parser.parse('[,]'), throwsA(isA<Exception>()));
+        expect(() => parser.parse('{,}'), throwsA(isA<Exception>()));
       });
     });
 

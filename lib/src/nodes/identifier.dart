@@ -3,12 +3,7 @@ part of 'expression.dart';
 class Identifier extends Expression {
   final String name;
 
-  Identifier({required this.name, required super.token}) {
-    assert(name != 'null');
-    assert(name != 'false');
-    assert(name != 'true');
-    assert(name != 'this');
-  }
+  Identifier({required this.name, required super.token});
 
   factory Identifier.defaultToken({required String name}) {
     return Identifier(name: name, token: name);

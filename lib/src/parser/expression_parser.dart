@@ -1,8 +1,9 @@
 import 'package:petitparser/petitparser.dart';
+import 'package:uni_expressions/src/parser/bound_string.dart';
 
 import '../expressions.dart';
 import 'keep_trim_parser.dart';
-import 'parser_config.dart';
+import '../configs/parser_config.dart';
 
 typedef _ArrayArgument = ({List<Expression> list, String token});
 
@@ -66,9 +67,16 @@ class ExpressionParser {
   // Gobbles only identifiers
   // e.g.: `foo`, `_value`, `$x1`
   Parser<Identifier> get _identifier =>
-      (digit().not() & (word() | char(r'$')).plus()).flatten().map(
-        (v) => Identifier(name: v, token: v),
-      );
+      ([
+                digit(),
+                boundString('this'),
+                boundString('true'),
+                boundString('false'),
+                boundString('null'),
+              ].toChoiceParser().not() &
+              (word() | char(r'$')).plus())
+          .flatten()
+          .map((v) => Identifier(name: v, token: v));
 
   // Parse simple numeric literals: `12`, `3.4`, `.5`.
   Parser<Literal> get _numericLiteral =>
@@ -124,17 +132,18 @@ class ExpressionParser {
       _sqStringLiteral.or(_dqStringLiteral).cast();
 
   // Parses a boolean literal
-  Parser<Literal> get _boolLiteral => (string('true') | string('false')).map(
-    (v) => Literal(value: v == 'true', token: v),
-  );
+  Parser<Literal> get _boolLiteral =>
+      (boundString('true') | boundString('false')).map(
+        (v) => Literal(value: v == 'true', token: v),
+      );
 
   // Parses the null literal
   Parser<Literal> get _nullLiteral =>
-      string('null').map((v) => Literal(value: null, token: v));
+      boundString('null').map((v) => Literal(value: null, token: v));
 
   // Parses the this literal
   Parser<ThisExpression> get _thisExpression =>
-      string('this').map((v) => ThisExpression(token: v));
+      boundString('this').map((v) => ThisExpression(token: v));
 
   // Responsible for parsing Array literals `[1, 2, 3]`
   // This function assumes that it needs to gobble the opening bracket
@@ -153,17 +162,22 @@ class ExpressionParser {
     _numericLiteral,
     _stringLiteral,
     _boolLiteral,
-    if (config.allowNull) _nullLiteral,
+    _nullLiteral,
     _arrayLiteral,
     _mapLiteral,
   ].toChoiceParser().cast();
 
   // This function is responsible for gobbling an individual expression,
   // e.g. `1`, `1+2`, `a+(b*2)-Math.sqrt(2)`
-  Parser<TrimResult<String>> get _binaryOperation => config.binaryOperators
-      .map<Parser<String>>((v) => string(v))
-      .reduce((a, b) => (a | b).cast<String>())
-      .trimLR();
+  Parser<TrimResult<String>> get _binaryOperation =>
+      config.binaryOperators.isEmpty
+      ? failure()
+      : ([...config.binaryOperators.keys]
+              // we sort to prevent ambiguity
+              ..sort((a, b) => b.length.compareTo(a.length)))
+            .map<Parser<String>>((v) => string(v))
+            .reduce((a, b) => (a | b).cast<String>())
+            .trimLR();
 
   Parser<Expression> get _binaryExpression =>
       _token.plusSeparated(_binaryOperation).map((sl) {
@@ -211,18 +225,23 @@ class ExpressionParser {
         return node;
       });
 
-  Parser<UnaryExpression> get _unaryExpression => config.unaryOperators
-      .map<Parser<String>>((v) => string(v))
-      .reduce((a, b) => (a | b).cast<String>())
-      .trimR()
-      .seq(_token)
-      .map(
-        (l) => UnaryExpression(
-          operator: l[0].middle,
-          operand: l[1],
-          token: '${l[0].leading}#o${l[0].trailing}#t',
-        ),
-      );
+  Parser<Expression> get _unaryExpression =>
+      (config.unaryOperators.isEmpty
+              ? failure()
+              : ([...config.unaryOperators]
+                      ..sort((a, b) => b.length.compareTo(a.length)))
+                    .map((o) => string(o))
+                    .toList()
+                    .toChoiceParser()
+                    .trimR())
+          .seq(_token)
+          .map(
+            (l) => UnaryExpression(
+              operator: l[0].middle,
+              operand: l[1],
+              token: '${l[0].leading}#o${l[0].trailing}#t',
+            ),
+          );
 
   Parser<LambdaExpression> get lambdaExpression =>
       (char('(').trimRFlatten() &
@@ -253,6 +272,8 @@ class ExpressionParser {
               .join(),
         ),
       )
+      .seq(char(',').trimLFlatten().optionalWith(''))
+      .map((l) => (list: l[0].list, token: l[0].token + l[1]) as _ArrayArgument)
       .optionalWith((list: [], token: ''));
 
   Parser<_LambdaArgument> get _lambdaArguments => _identifier
@@ -264,6 +285,12 @@ class ExpressionParser {
               .map((e) => e.$2 is String ? e.$2 : '#a${e.$1 ~/ 2}')
               .join(),
         ),
+      )
+      .seq(char(',').trimLFlatten().optionalWith(''))
+      .map(
+        (l) =>
+            (arguments: l[0].arguments, token: l[0].token + l[1])
+                as _LambdaArgument,
       )
       .optionalWith((arguments: [], token: ''));
 
@@ -288,6 +315,8 @@ class ExpressionParser {
                   .join(),
             ),
           )
+          .seq(char(',').trimLFlatten().optionalWith(''))
+          .map((l) => (map: l[0].map, token: l[0].token + l[1]) as _MapArgument)
           .optionalWith((map: {}, token: ''));
 
   // Gobble a non-literal variable name. This variable name may include properties

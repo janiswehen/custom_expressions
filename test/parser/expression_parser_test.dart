@@ -8,7 +8,7 @@ void main() {
     late ExpressionParser parser;
 
     setUp(() {
-      parser = ExpressionParser();
+      parser = ExpressionParser(config: ParserConfig.defaultConfig());
     });
 
     test('can parse Variables', () {
