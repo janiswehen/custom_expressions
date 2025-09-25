@@ -34,7 +34,7 @@ class ExpressionParser {
           ),
     );
     _token.set(
-      (lambdaExpression | _literal | _unaryExpression | _variable)
+      (_lambdaExpression | _variable | _unaryExpression | _literal)
           .cast<Expression>(),
     );
   }
@@ -243,7 +243,7 @@ class ExpressionParser {
             ),
           );
 
-  Parser<LambdaExpression> get lambdaExpression =>
+  Parser<LambdaExpression> get _lambdaExpression =>
       (char('(').trimRFlatten() &
               _lambdaArguments &
               char(')').trimLFlatten() &
@@ -365,9 +365,10 @@ class ExpressionParser {
           .cast();
 
   Parser<Expression> get _groupOrIdentifier => [
-    _group,
+    _literal,
     if (config.allowThis) _thisExpression,
     _identifier.map((v) => Variable(identifier: v, token: '#i')),
+    _group,
   ].toChoiceParser().cast();
 
   Parser<_MemberArgument> get _memberArgument =>

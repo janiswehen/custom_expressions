@@ -233,18 +233,136 @@ void main() {
       );
     });
 
-    test('can parse Member Expressions', () {
-      expect(
-        parser.parse('foo.bar'),
-        MatchNode(
-          expected: MemberExpression.defaultToken(
-            object: Variable.defaultToken(
-              identifier: Identifier.defaultToken(name: 'foo'),
+    group('can parse Member Expressions', () {
+      test('can parse simple Member Expressions on variables', () {
+        expect(
+          parser.parse('foo.bar'),
+          MatchNode(
+            expected: MemberExpression.defaultToken(
+              object: Variable.defaultToken(
+                identifier: Identifier.defaultToken(name: 'foo'),
+              ),
+              property: Identifier.defaultToken(name: 'bar'),
             ),
-            property: Identifier.defaultToken(name: 'bar'),
           ),
-        ),
-      );
+        );
+      });
+
+      test('can parse Member Expressions on literals', () {
+        expect(
+          parser.parse('1.bar'),
+          MatchNode(
+            expected: MemberExpression.defaultToken(
+              object: Literal.defaultToken(value: 1),
+              property: Identifier.defaultToken(name: 'bar'),
+            ),
+          ),
+        );
+
+        expect(
+          parser.parse('"Test".bar'),
+          MatchNode(
+            expected: MemberExpression.defaultToken(
+              object: Literal.defaultToken(value: 'Test'),
+              property: Identifier.defaultToken(name: 'bar'),
+            ),
+          ),
+        );
+
+        expect(
+          parser.parse('true.bar'),
+          MatchNode(
+            expected: MemberExpression.defaultToken(
+              object: Literal.defaultToken(value: true),
+              property: Identifier.defaultToken(name: 'bar'),
+            ),
+          ),
+        );
+
+        expect(
+          parser.parse('null.bar'),
+          MatchNode(
+            expected: MemberExpression.defaultToken(
+              object: Literal.defaultToken(value: null),
+              property: Identifier.defaultToken(name: 'bar'),
+            ),
+          ),
+        );
+
+        expect(
+          parser.parse('[1, 2, 3].bar'),
+          MatchNode(
+            expected: MemberExpression.defaultToken(
+              object: Literal.defaultToken(
+                value: [
+                  Literal.defaultToken(value: 1),
+                  Literal.defaultToken(value: 2),
+                  Literal.defaultToken(value: 3),
+                ],
+              ),
+              property: Identifier.defaultToken(name: 'bar'),
+            ),
+          ),
+        );
+
+        expect(
+          parser.parse('{"a": 1, "b": 2, "c": 3}.bar'),
+          MatchNode(
+            expected: MemberExpression.defaultToken(
+              object: Literal.defaultToken(
+                value: {
+                  Literal.defaultToken(value: 'a'): Literal.defaultToken(
+                    value: 1,
+                  ),
+                  Literal.defaultToken(value: 'b'): Literal.defaultToken(
+                    value: 2,
+                  ),
+                  Literal.defaultToken(value: 'c'): Literal.defaultToken(
+                    value: 3,
+                  ),
+                },
+              ),
+              property: Identifier.defaultToken(name: 'bar'),
+            ),
+          ),
+        );
+      });
+
+      test('can parse callable Member Expressions', () {
+        expect(
+          parser.parse('foo.bar()'),
+          MatchNode(
+            expected: CallExpression.defaultToken(
+              callee: MemberExpression.defaultToken(
+                object: Variable.defaultToken(
+                  identifier: Identifier.defaultToken(name: 'foo'),
+                ),
+                property: Identifier.defaultToken(name: 'bar'),
+              ),
+              arguments: [],
+            ),
+          ),
+        );
+
+        expect(
+          parser.parse('foo.bar(a)'),
+          MatchNode(
+            expected: CallExpression.defaultToken(
+              callee: MemberExpression.defaultToken(
+                object: Variable.defaultToken(
+                  identifier: Identifier.defaultToken(name: 'foo'),
+                ),
+                property: Identifier.defaultToken(name: 'bar'),
+              ),
+              arguments: [
+                Variable.defaultToken(
+                  identifier: Identifier.defaultToken(name: 'a'),
+                ),
+              ],
+            ),
+          ),
+        );
+      });
     });
 
     test('can parse This Expressions', () {

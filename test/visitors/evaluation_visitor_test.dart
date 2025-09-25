@@ -195,11 +195,6 @@ void main() {
         expect('7 | 3', toEvaluateTo(7));
         expect('0 | 5', toEvaluateTo(5));
 
-        // XOR
-        expect('5 ^ 3', toEvaluateTo(6));
-        expect('7 ^ 3', toEvaluateTo(4));
-        expect('0 ^ 5', toEvaluateTo(5));
-
         // Left shift
         expect('1 << 2', toEvaluateTo(4));
         expect('3 << 1', toEvaluateTo(6));

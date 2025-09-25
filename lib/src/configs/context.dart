@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'parser_config.dart';
 
 class Context {
@@ -46,7 +48,7 @@ class Context {
     '^': BinaryOperator(
       name: '^',
       precedence: 4,
-      implementation: (left, right) => (left as int) ^ (right as int),
+      implementation: (left, right) => pow(left, right),
     ),
     '&': BinaryOperator(
       name: '&',
@@ -139,6 +141,8 @@ class Context {
         'first': (list) => list.first,
         'last': (list) => list.last,
         'length': (list) => list.length,
+        'map': (list) =>
+            (dynamic Function(dynamic) lambda) => list.map(lambda).toList(),
       },
     ),
     ClassMemberAccessor<Map>(
