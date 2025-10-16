@@ -1,11 +1,18 @@
 import '../expressions.dart';
 import 'visitor.dart';
 
+/// The [StringVisitor] class is a visitor that converts the expression tree to a string.
+/// This is done by replacing the relevant placeholders of the token String in the expression nodes.
 class StringVisitor with Visitor<String, Null> {
-  static StringVisitor instance = StringVisitor();
+  static final StringVisitor _instance = StringVisitor();
 
+  /// Converts the expression tree to a string.
+  ///
+  /// [node] The expression tree to convert.
+  ///
+  /// Returns the string representation of the expression tree.
   static String visit(Expression node) {
-    return instance.visitNode(node, null);
+    return _instance.visitNode(node, null);
   }
 
   @override

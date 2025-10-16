@@ -5,6 +5,7 @@ import '../parser/join_parser.dart';
 import 'visitor.dart';
 
 extension _KeepOptionalParentheses on String {
+  /// Applies a inner formatter to the string or the inner string enclosed in parentheses.
   String keepOptionalParentheses(String Function(String) innerFormatter) {
     final hasParentheses = startsWith('(') && endsWith(')');
     if (hasParentheses) {
@@ -14,11 +15,16 @@ extension _KeepOptionalParentheses on String {
   }
 }
 
+/// The [FormatVisitor] class is a visitor that formats the expression tree.
+///
 class FormatVisitor with Visitor<void, Null> {
-  static FormatVisitor instance = FormatVisitor();
+  static final FormatVisitor _instance = FormatVisitor();
 
+  /// Formats the expression tree.
+  ///
+  /// [node] The expression tree to format.
   static void format(Expression node) {
-    instance.visitNode(node, null);
+    _instance.visitNode(node, null);
   }
 
   @override

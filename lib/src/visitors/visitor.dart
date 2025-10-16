@@ -1,6 +1,20 @@
 import '../expressions.dart';
 
+/// A mixin that defines a visitor pattern for the expression tree.
+///
+/// The [Visitor] mixin provides a generic implementation of the visitor pattern
+/// for the expression tree. It defines a method for visiting each type of expression
+/// and a method for visiting the entire expression tree.
+///
+/// The [T] type parameter represents the type of the result of the visit.
+/// The [E] type parameter represents the extra context of the visit that is passed up the visitor recursion.
 mixin Visitor<T, E> {
+  /// Visits a expression node by delegating to the appropriate visit method.
+  ///
+  /// The [node] parameter is the expression node to visit.
+  /// The [extra] parameter is the extra context of the visit that is passed up the visitor recursion.
+  ///
+  /// The method returns the result of the visit.
   T visitNode(Expression node, E extra) {
     switch (node) {
       case BinaryExpression():

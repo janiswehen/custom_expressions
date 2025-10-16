@@ -1,8 +1,14 @@
 part of 'expression.dart';
 
+/// A binary expression node.
 class BinaryExpression extends Expression {
+  /// The left operand of the binary expression.
   final Expression left;
+
+  /// The right operand of the binary expression.
   final Expression right;
+
+  /// The operator of the binary expression.
   final String operator;
 
   BinaryExpression({
@@ -12,6 +18,7 @@ class BinaryExpression extends Expression {
     required super.token,
   });
 
+  /// Creates a new binary expression node with a default token.
   factory BinaryExpression.defaultToken({
     required Expression left,
     required Expression right,

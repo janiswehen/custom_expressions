@@ -1,7 +1,11 @@
 part of 'expression.dart';
 
+/// An index expression node.
 class IndexExpression extends Expression {
+  /// The object of the index expression.
   final Expression object;
+
+  /// The index of the index expression.
   final Expression index;
 
   IndexExpression({
@@ -10,6 +14,7 @@ class IndexExpression extends Expression {
     required super.token,
   });
 
+  /// Creates a new index expression node with a default token.
   factory IndexExpression.defaultToken({
     required Expression object,
     required Expression index,

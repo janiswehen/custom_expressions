@@ -17,7 +17,35 @@ typedef _MemberArgument = ({Identifier property, String token});
 
 typedef _CallArgument = ({List<Expression> arguments, String token});
 
+/// A comprehensive parser for mathematical and logical expressions.
+///
+/// This parser supports a wide range of expression types including:
+/// - Literals (numbers, strings, booleans, null, arrays, maps)
+/// - Variables
+/// - Binary operations with configurable operators and precedence
+/// - Unary operations
+/// - Function calls and method chaining
+/// - Member access (dot notation)
+/// - Array and map literals
+/// - Lambda expressions
+/// - Conditional (ternary) expressions
+/// - Grouped expressions (parentheses)
+/// - Ternary (conditional) expressions
+/// - This expression (only when enabled in the parser config)
+///
+/// The parser is configurable through [ParserConfig], allowing you to
+/// customize operators, precedence rules, and other parsing behavior.
+///
+/// Example:
+/// ```dart
+/// final parser = ExpressionParser();
+/// final expression = parser.parse('a + b * c');
+/// ```
 class ExpressionParser {
+  /// Creates a new expression parser with the given configuration.
+  ///
+  /// [config] The parser configuration that defines operators, precedence,
+  /// and other parsing behavior. Defaults to [ParserConfig.defaultConfig].
   ExpressionParser({this.config = const ParserConfig.defaultConfig()}) {
     _expression.set(
       _binaryExpression
@@ -39,14 +67,35 @@ class ExpressionParser {
     );
   }
 
+  /// Attempts to parse an expression string and returns a parsed [Expression] tree
+  /// or null if the parsing fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// final parser = ExpressionParser();
+  /// final result1 = parser.tryParse('a + b'); // Returns Expression
+  /// final result2 = parser.tryParse('a + b +'); // Returns null
+  /// ```
   Expression? tryParse(String formattedString) {
     final result = _finalProgram.parse(formattedString);
     return result is Success ? result.value : null;
   }
 
-  Expression parse(String formattedString) =>
-      _finalProgram.parse(formattedString).value;
+  /// Parses an expression string and returns a parsed [Expression] tree
+  /// or throws a [ParserException] if the parsing fails.
+  ///
+  /// Example:
+  /// ```dart
+  /// final parser = ExpressionParser();
+  /// final result1 = parser.parse('a + b'); // Returns Expression
+  /// final result2 = parser.parse('a + b +'); // Throws ParserException
+  /// ```
+  Expression parse(String str) => _finalProgram.parse(str).value;
 
+  /// The configuration used by this parser.
+  ///
+  /// This configuration defines the operators, precedence rules, and other
+  /// parsing behavior for the expression parser.
   final ParserConfig config;
 
   Parser<Expression> get _finalProgram => _expression
@@ -64,8 +113,6 @@ class ExpressionParser {
   // e.g. `foo.bar(baz)`, `1`, `'abc'`, `(a % 2)` (because it's in parenthesis)
   final SettableParser<Expression> _token = undefined<Expression>();
 
-  // Gobbles only identifiers
-  // e.g.: `foo`, `_value`, `$x1`
   Parser<Identifier> get _identifier =>
       ([
                 digit(),
@@ -78,7 +125,6 @@ class ExpressionParser {
           .flatten()
           .map((v) => Identifier(name: v, token: v));
 
-  // Parse simple numeric literals: `12`, `3.4`, `.5`.
   Parser<Literal> get _numericLiteral =>
       ((digit() | char('.')).and() &
               (digit().star() &
@@ -126,28 +172,20 @@ class ExpressionParser {
           .pick(1)
           .map((v) => Literal(value: _unescape(v), token: '"$v"'));
 
-  // Parses a string literal, staring with single or double quotes with basic
-  // support for escape codes
   Parser<Literal> get _stringLiteral =>
       _sqStringLiteral.or(_dqStringLiteral).cast();
 
-  // Parses a boolean literal
   Parser<Literal> get _boolLiteral =>
       (boundString('true') | boundString('false')).map(
         (v) => Literal(value: v == 'true', token: v),
       );
 
-  // Parses the null literal
   Parser<Literal> get _nullLiteral =>
       boundString('null').map((v) => Literal(value: null, token: v));
 
-  // Parses the this literal
   Parser<ThisExpression> get _thisExpression =>
       boundString('this').map((v) => ThisExpression(token: v));
 
-  // Responsible for parsing Array literals `[1, 2, 3]`
-  // This function assumes that it needs to gobble the opening bracket
-  // and then tries to gobble the expressions as arguments.
   Parser<Literal> get _arrayLiteral =>
       (char('[').trimRFlatten() & _arguments & char(']').trimLFlatten()).map(
         (l) => Literal(value: l[1].list, token: '${l[0]}${l[1].token}${l[2]}'),
@@ -167,8 +205,6 @@ class ExpressionParser {
     _mapLiteral,
   ].toChoiceParser().cast();
 
-  // This function is responsible for gobbling an individual expression,
-  // e.g. `1`, `1+2`, `a+(b*2)-Math.sqrt(2)`
   Parser<TrimResult<String>> get _binaryOperation =>
       config.binaryOperators.isEmpty
       ? failure()
@@ -257,11 +293,6 @@ class ExpressionParser {
             ),
           );
 
-  // Gobbles a list of arguments within the context of a function call
-  // or array literal. This function also assumes that the opening character
-  // `(` or `[` has already been gobbled, and gobbles expressions and commas
-  // until the terminator character `)` or `]` is encountered.
-  // e.g. `foo(bar, baz)`, `my_func()`, or `[bar, baz]`
   Parser<_ArrayArgument> get _arguments => _expression
       .plusSeparated(char(',').trimLRFlatten())
       .map(
@@ -319,10 +350,6 @@ class ExpressionParser {
           .map((l) => (map: l[0].map, token: l[0].token + l[1]) as _MapArgument)
           .optionalWith((map: {}, token: ''));
 
-  // Gobble a non-literal variable name. This variable name may include properties
-  // e.g. `foo`, `bar.baz`, `foo['bar'].baz`
-  // It also gobbles function calls:
-  // e.g. `Math.acos(obj.angle)`
   Parser<Expression> get _variable => _groupOrIdentifier
       .seq((_memberArgument | _indexArgument | _callArgument).star())
       .map((l) {
@@ -354,11 +381,6 @@ class ExpressionParser {
         });
       });
 
-  // Responsible for parsing a group of things within parentheses `()`
-  // This function assumes that it needs to gobble the opening parenthesis
-  // and then tries to gobble everything within that parenthesis, assuming
-  // that the next thing it should see is the close parenthesis. If not,
-  // then the expression probably doesn't have a `)`
   Parser<Expression> get _group =>
       (char('(').trimRFlatten() & _expression & char(')').trimLFlatten())
           .map((l) => l[1].copyWithToken(token: '${l[0]}${l[1].token}${l[2]}'))
@@ -386,7 +408,6 @@ class ExpressionParser {
         (l) => (arguments: l[1].list, token: '${l[0]}${l[1].token}${l[2]}'),
       );
 
-  // Ternary expression: test ? consequent : alternate
   Parser<List> get _conditionArguments =>
       (char('?').trimLRFlatten() & _expression & char(':').trimLRFlatten()).seq(
         _expression,

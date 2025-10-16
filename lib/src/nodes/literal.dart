@@ -1,10 +1,13 @@
 part of 'expression.dart';
 
+/// A literal node.
 class Literal extends Expression {
+  /// The value of the literal.
   final dynamic value;
 
   Literal({required this.value, required super.token});
 
+  /// Creates a new literal node with a default token.
   factory Literal.defaultToken({required dynamic value}) {
     if (value is List) {
       return Literal(

@@ -1,7 +1,11 @@
 part of 'expression.dart';
 
+/// A member expression node.
 class MemberExpression extends Expression {
+  /// The object of the member expression.
   final Expression object;
+
+  /// The property of the member expression.
   final Identifier property;
 
   MemberExpression({
@@ -10,6 +14,7 @@ class MemberExpression extends Expression {
     required super.token,
   });
 
+  /// Creates a new member expression node with a default token.
   factory MemberExpression.defaultToken({
     required Expression object,
     required Identifier property,

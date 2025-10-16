@@ -1,7 +1,11 @@
 part of 'expression.dart';
 
+/// A lambda expression node.
 class LambdaExpression extends Expression {
+  /// The body of the lambda expression.
   final Expression body;
+
+  /// The arguments of the lambda expression.
   final List<Identifier> arguments;
 
   LambdaExpression({
@@ -10,6 +14,7 @@ class LambdaExpression extends Expression {
     required super.token,
   });
 
+  /// Creates a new lambda expression node with a default token.
   factory LambdaExpression.defaultToken({
     required Expression body,
     required List<Identifier> arguments,

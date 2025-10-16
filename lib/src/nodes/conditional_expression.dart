@@ -1,8 +1,14 @@
 part of 'expression.dart';
 
+/// A conditional expression node.
 class ConditionalExpression extends Expression {
+  /// The condition of the conditional expression.
   final Expression condition;
+
+  /// The then branch of the conditional expression.
   final Expression then;
+
+  /// The otherwise branch of the conditional expression.
   final Expression otherwise;
 
   ConditionalExpression({
@@ -12,6 +18,7 @@ class ConditionalExpression extends Expression {
     required super.token,
   });
 
+  /// Creates a new conditional expression node with a default token.
   factory ConditionalExpression.defaultToken({
     required Expression condition,
     required Expression then,

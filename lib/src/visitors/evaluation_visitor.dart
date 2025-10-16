@@ -2,7 +2,14 @@ import '../configs.dart';
 import '../expressions.dart';
 import 'visitor.dart';
 
+/// The [EvaluationVisitor] class is a visitor that evaluates the expression tree.
 class EvaluationVisitor with Visitor<dynamic, Context> {
+  /// Evaluates the expression tree.
+  ///
+  /// [node] The expression tree to evaluate.
+  /// [extra] The context used for evaluation.
+  ///
+  /// Returns the result of the evaluation.
   static dynamic evaluate(Expression node, Context extra) {
     return EvaluationVisitor().visitNode(node, extra);
   }

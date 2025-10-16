@@ -1,7 +1,11 @@
 part of 'expression.dart';
 
+/// A call expression node.
 class CallExpression extends Expression {
+  /// The callee of the call expression.
   final Expression callee;
+
+  /// The arguments of the call expression.
   final List<Expression> arguments;
 
   CallExpression({
@@ -10,6 +14,7 @@ class CallExpression extends Expression {
     required super.token,
   });
 
+  /// Creates a new call expression node with a default token.
   factory CallExpression.defaultToken({
     required Expression callee,
     required List<Expression> arguments,
